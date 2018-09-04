@@ -2,10 +2,10 @@ import logging
 import cv2
 import pyscreenshot as ImageGrab
 import numpy as np
-import autopy
+# import autopy
 from matplotlib import pyplot as plt
 
-import pyaudio
+# import pyaudio
 import wave
 import audioop
 from collections import deque
@@ -23,8 +23,8 @@ screen_end_point = None
 
 
 def check_process():
-	print 'Checking WoW is running'
-	wow_process_names = ["World of Warcraft"]
+	print ('Checking WoW is running')
+	wow_process_names = ["Wow.exe"]
 	running = False
 	for pid in psutil.pids():
 		p = psutil.Process(pid)
@@ -32,15 +32,15 @@ def check_process():
 			print(p.name())
 			running = True
 	if not running and not dev:
-		print 'WoW is not running'
+		print ('WoW is not running')
 		exit()
-	print 'WoW is running'
+	print ('WoW is running')
 		# raw_input('Pleas e put your fishing-rod on key 1, zoom-in to max, move camera on fishing-float and press any key')
 
 
 
 def check_screen_size():
-	print "Checking screen size"
+	print ("Checking screen size")
 	img = ImageGrab.grab()
 	# img.save('temp.png')
 	global screen_size
@@ -54,18 +54,18 @@ def check_screen_size():
 
 
 def send_float():
-	print 'Sending float'
+	print ('Sending float')
 	autopy.key.tap(u'1')
-	print 'Float is sent, waiting animation'
+	print ('Float is sent, waiting animation')
 	time.sleep(2)
 
 def jump():
-	print 'Jump!'
+	print ('Jump!')
 	# autopy.key.tap(u' ')
 	time.sleep(1)
 
 def make_screenshot():
-	print 'Capturing screen'
+	print ('Capturing screen')
 	print(screen_start_point)
 	screenshot = ImageGrab.grab(bbox=(screen_start_point[0], screen_start_point[1], screen_end_point[0], screen_end_point[1])) # (0, 710, 410, 1010)
 	if dev:
@@ -76,7 +76,7 @@ def make_screenshot():
 	return screenshot_name
 
 def find_float(img_name):
-	print 'Looking for float'
+	print ('Looking for float')
 	# todo: maybe make some universal float without background?
 	for x in range(0, 7):
 		template = cv2.imread('var/fishing_float_' + str(x) + '.png', 0)
@@ -91,7 +91,7 @@ def find_float(img_name):
 		for pt in zip(*loc[::-1]):
 		    cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
 		if loc[0].any():
-			print 'Found ' + str(x) + ' float'
+			print ('Found ' + str(x) + ' float')
 			if dev:
 				cv2.imwrite('var/fishing_session_' + str(int(time.time())) + '_success.png', img_rgb)
 			return (loc[1][0] + w / 2) / 2, (loc[0][0] + h / 2) / 2
@@ -103,7 +103,7 @@ def move_mouse(place):
 	autopy.mouse.smooth_move(int(screen_start_point[0]) + x , int(screen_start_point[1]) + y)
 
 def listen():
-	print 'Well, now we are listening for loud sounds...'
+	print ('Well, now we are listening for loud sounds...')
 	CHUNK = 1024  # CHUNKS of bytes to read each time from mic
 	FORMAT = pyaudio.paInt16
 	CHANNELS = 2
@@ -133,11 +133,11 @@ def listen():
 			cur_data = stream.read(CHUNK)
 			slid_win.append(math.sqrt(abs(audioop.avg(cur_data, 4))))
 			if(sum([x > THRESHOLD for x in slid_win]) > 0):
-				print 'I heart something!'
+				print ('I heart something!')
 				success = True
 				break
 			if time.time() - listening_start_time > 20:
-				print 'I don\'t hear anything already 20 seconds!'
+				print ('I don\'t hear anything already 20 seconds!')
 				break
 		except IOError:
 			break
@@ -163,7 +163,7 @@ def logout():
 
 def main():
 	if check_process() and not dev:
-		print "Waiting 2 seconds, so you can switch to WoW"
+		print ("Waiting 2 seconds, so you can switch to WoW")
 		time.sleep(2)
 
 	check_screen_size()
@@ -175,28 +175,28 @@ def main():
 		im = make_screenshot()
 		place = find_float(im)
 		if not place:
-			print 'Float was not found, retrying in 2 seconds'
+			print ('Float was not found, retrying in 2 seconds')
 			time.sleep(3)
 			im = make_screenshot()
 			place = find_float(im)
 			if not place:
-				print 'Still can\'t find float, breaking this session'
+				print ('Still can\'t find float, breaking this session')
 				jump()
 				continue
 		print('Float found at ' + str(place))
 		move_mouse(place)
 		if not listen():
-			print 'If we didn\' hear anything, lets try again'
+			print ('If we didn\' hear anything, lets try again')
 			jump()
 			continue
 		snatch()
 		time.sleep(3)
 		catched += 1
-		print 'I guess we\'ve snatched something'
+		print ('I guess we\'ve snatched something')
 		if catched == 250:
 			break
 		time.sleep(3)
-	print 'catched ' + str(catched)
+	print ('catched ' + str(catched))
 	logout()
 
 main()
